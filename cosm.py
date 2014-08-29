@@ -16,6 +16,8 @@ import serial
 import os
 import time
 import datetime
+# import threading #for gc routine
+# import gc #garbage collection
 from eeml.datastream import CosmError
 
   
@@ -30,6 +32,14 @@ def main():
   n2temps = []
   n3temps = []
   n4temps = []
+
+  # garbage collection to reduce memory leaks added July 2, 2014
+  # gc is set to run every 21600 seconds (6 hours)
+  
+  #def foo():
+  #  gc.collect()
+  #  threading.Timer(21600, foo).start()
+    
   
   def runningAverage(node, temperature, pointer, temps):
       #print "RunningAverage function; pointer = %d" % pointer
@@ -91,6 +101,7 @@ def main():
   API_URL = '/v2/feeds/{feednum}.xml' .format(feednum = FEED)
 
   ser = serial.Serial('/dev/ttyUSB0', 57600)
+  # ser.close()
 
   while True:
           
@@ -110,42 +121,42 @@ def main():
       node = rawx.pop(0).strip()          # Node number
       
     
-      if node == '1':
-        temperature = calcTemp()
-        
-        # rolling average code:
-        pointer = n1pointer
-        temps = n1temps
-        
-        average = runningAverage(node, temperature, pointer, temps)
-        node = average[0]
-        avrg = average[1]
-        pointer = average[2]
-        temps = average[3]
-        
-        n1pointer = pointer
-        n1temps = temps
-        
-        #print "Node: %s  Avg Temp: %s Celcius  Pointer: %s  List: %s" % (node, avrg, pointer, temps)
-        
-        pac.update([eeml.Data('Garage', avrg, unit=eeml.Unit('celcius', 'basicSI', 'C'))])
-        try:
-          pac.put()
-        except CosmError, e:
-          now = datetime.datetime.now()
-          print now.strftime('%Y-%m-%d %H:%M ERROR Node 1: StandardError')
-          print('ERROR: pac.put(): {}'.format(e))
-        except StandardError:
-          #print('ERROR: StandardError')
-          now = datetime.datetime.now()
-          print now.strftime('%Y-%m-%d %H:%M ERROR Node 1: StandardError')
-        except:
-          now = datetime.datetime.now()
-          print now.strftime('%Y-%m-%d %H:%M ERROR Node 1: StandardError')
-          print('ERROR: Unexpected error: %s' % sys.exc_info()[0])
+##      if node == '1':
+##        temperature = calcTemp()
+##        
+##        # rolling average code:
+##        pointer = n1pointer
+##        temps = n1temps
+##        
+##        average = runningAverage(node, temperature, pointer, temps)
+##        node = average[0]
+##        avrg = average[1]
+##        pointer = average[2]
+##        temps = average[3]
+##        
+##        n1pointer = pointer
+##        n1temps = temps
+##        
+##        #print "Node: %s  Avg Temp: %s Celcius  Pointer: %s  List: %s" % (node, avrg, pointer, temps)
+##        
+##        pac.update([eeml.Data('Garage', avrg, unit=eeml.Unit('celcius', 'basicSI', 'C'))])
+##        try:
+##          pac.put()
+##        except CosmError, e:
+##          now = datetime.datetime.now()
+##          print now.strftime('%Y-%m-%d %H:%M ERROR Node 1: StandardError')
+##          print('ERROR: pac.put(): {}'.format(e))
+##        except StandardError:
+##          #print('ERROR: StandardError')
+##          now = datetime.datetime.now()
+##          print now.strftime('%Y-%m-%d %H:%M ERROR Node 1: StandardError')
+##        except:
+##          now = datetime.datetime.now()
+##          print now.strftime('%Y-%m-%d %H:%M ERROR Node 1: StandardError')
+##          print('ERROR: Unexpected error: %s' % sys.exc_info()[0])
 
 
-      elif node == '2':
+      if node == '2':
         temperature = calcTemp()
         
         # rolling average code:
@@ -166,6 +177,8 @@ def main():
         pac.update([eeml.Data('MBL_Room', avrg, unit=eeml.Unit('celcius', 'basicSI', 'C'))])
         try:
           pac.put()
+        except Exception as e:
+          print "Oops! Something went wrong. Error = {}".format(e)
         except CosmError, e:
           now = datetime.datetime.now()
           print now.strftime('%Y-%m-%d %H:%M ERROR Node 2: StandardError')
@@ -201,6 +214,8 @@ def main():
         pac.update([eeml.Data('In-Law_Suite', avrg, unit=eeml.Unit('celcius', 'basicSI', 'C'))])
         try:
           pac.put()
+        except Exception as e:
+          print "Oops! Something went wrong. Error = {}".format(e)
         except CosmError, e:
           now = datetime.datetime.now()
           print now.strftime('%Y-%m-%d %H:%M ERROR Node 3: StandardError')
@@ -236,6 +251,8 @@ def main():
         pac.update([eeml.Data('Pantry', avrg, unit=eeml.Unit('celcius', 'basicSI', 'C'))])
         try:
           pac.put()
+        except Exception as e:
+          print "Oops! Something went wrong. Error = {}".format(e)
         except CosmError, e:
           now = datetime.datetime.now()
           print now.strftime('%Y-%m-%d %H:%M ERROR Node 4: StandardError')
@@ -279,6 +296,15 @@ def main():
         ds1820Raw = (int(ds1820High) * 256) + int(ds1820Low)
         ds1820Raw2 = ds1820Raw + 0.0
         actualds1820 = ds1820Raw2 / 100
+        if actualds1820 > 100:
+          actualds1820 = 0.1
+
+##        if ds1820High > 128:                      # code to account for negative temps
+##          ds1820Raw = ~ ds1820Low
+##          actualds1820 = ds1820Raw * -1.0 / 100
+##        else:
+##          ds1820Raw = ds1820Low + 0.0
+##          actualds1820 = ds1820Raw / 100
 
         pac.update([eeml.Data('Remote_Temp', actualTemp,
                               unit=eeml.Unit('celcius', 'basicSI', 'C')),
@@ -290,6 +316,8 @@ def main():
                               unit=eeml.Unit('celcius', 'basicSI', 'C'))])
         try:
           pac.put()
+        except Exception as e:
+          print "Oops! Something went wrong. Error = {}".format(e)
         except CosmError, e:
           now = datetime.datetime.now()
           print now.strftime('%Y-%m-%d %H:%M ERROR Node 5: StandardError')
@@ -348,7 +376,7 @@ def main():
         # Garage Door Sensor Reading for Test
         gdLow = rawx.pop(0).strip()            # garage door low byte FOR TEST
         gdHigh = rawx.pop(0).strip()           # garage door high byte
-        gdRaw = (int(gdHigh) * 256) + int(gdLow)
+        #gdRaw = (int(gdHigh) * 256) + int(gdLow)
 
         garageDoor = rawx.pop(0).strip()        # garage door
         
@@ -365,14 +393,15 @@ def main():
                               unit=eeml.Unit('percent', 'basicSI', 'RH')),
                     eeml.Data('G_Carbon_Monoxide', actualco,
                               unit=eeml.Unit('/1024', 'basicSI', '/1024')),
-                    eeml.Data('G_Door_Reading', gdRaw,
-                              unit=eeml.Unit('/1024', 'basicSI', '/1024')),
-                    eeml.Data('G_Door', garageDoor,
+                    #eeml.Data('G_Door_Reading', gdRaw, unit=eeml.Unit('/1024', 'basicSI', '/1024')),
+                    eeml.Data('G_Door_CLOSED', garageDoor,
                               unit=eeml.Unit('binary', 'basicSI', 'binary'))])
         
         
         try:
           pac.put()
+        except Exception as e:
+          print "Oops! Something went wrong. Error = {}".format(e)
         except CosmError, e:
           now = datetime.datetime.now()
           print now.strftime('%Y-%m-%d %H:%M ERROR Node 5: StandardError')

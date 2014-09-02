@@ -84,7 +84,7 @@ def main():
     return temperature               # pass this on!
 
   
-  nodeList = 'n', 'Garage', 'MBL_Room', 'In-law_Suite', 'Node4', 'Battery_Test'
+  nodeList = 'Office', 'Garage', 'MBL_Room', 'In-law_Suite', 'Node4', 'Battery_Test'
 
   # CPU monitor routine, requires "import os"
   def getCPUtemperature():
@@ -121,39 +121,58 @@ def main():
       node = rawx.pop(0).strip()          # Node number
       
     
-##      if node == '1':
-##        temperature = calcTemp()
-##        
-##        # rolling average code:
-##        pointer = n1pointer
-##        temps = n1temps
-##        
-##        average = runningAverage(node, temperature, pointer, temps)
-##        node = average[0]
-##        avrg = average[1]
-##        pointer = average[2]
-##        temps = average[3]
-##        
-##        n1pointer = pointer
-##        n1temps = temps
-##        
-##        #print "Node: %s  Avg Temp: %s Celcius  Pointer: %s  List: %s" % (node, avrg, pointer, temps)
-##        
-##        pac.update([eeml.Data('Garage', avrg, unit=eeml.Unit('celcius', 'basicSI', 'C'))])
-##        try:
-##          pac.put()
-##        except CosmError, e:
-##          now = datetime.datetime.now()
-##          print now.strftime('%Y-%m-%d %H:%M ERROR Node 1: StandardError')
-##          print('ERROR: pac.put(): {}'.format(e))
-##        except StandardError:
-##          #print('ERROR: StandardError')
-##          now = datetime.datetime.now()
-##          print now.strftime('%Y-%m-%d %H:%M ERROR Node 1: StandardError')
-##        except:
-##          now = datetime.datetime.now()
-##          print now.strftime('%Y-%m-%d %H:%M ERROR Node 1: StandardError')
-##          print('ERROR: Unexpected error: %s' % sys.exc_info()[0])
+      if node == '1':
+        
+        tempLow = rawx.pop(0).strip()           # temperature low byte
+        tempHigh = rawx.pop(0).strip()          # temperature high byte
+        if int(tempHigh) < 5:			# if this byte is greater than 5, 
+        				# temp is (for sure) a positive value
+          tempRaw = (int(tempHigh) * 256) + int(tempLow)
+        else:
+          tempRaw = (255 ^ (int(tempLow))) * -1	# temp is negative value, so do a 1's complement
+        tempRaw2 = tempRaw + 0.0
+        actualTemp = tempRaw2 / 10
+        
+        humLow = rawx.pop(0).strip()            # humidity low byte
+        humHigh = rawx.pop(0).strip()           # humidity high byte
+        humRaw = (int(humHigh) * 256) + int(humLow)
+        humRaw2 = humRaw + 0.0
+        actualHum = humRaw2 / 10
+        
+        lightLow = rawx.pop(0).strip()            # humidity low byte
+        lightHigh = rawx.pop(0).strip()           # humidity high byte
+        lightRaw = (int(lightHigh) * 256) + int(lightLow)
+        actualLight = lightRaw
+        
+        pir = rawx.pop(0).strip()               # PIR sensor 
+        
+        
+        
+        pac.update([eeml.Data('Office_Temp', actualTemp,
+                              unit=eeml.Unit('celcius', 'basicSI', 'C')),
+                    eeml.Data('Office_Humidity', actualHum,
+                              unit=eeml.Unit('percent', 'basicSI', 'RH')),
+                    eeml.Data('Office_LightLevel', actualLight,
+                              unit=eeml.Unit('candela', 'basicSI', 'cd')),
+                    eeml.Data('Office_PIR', pir,
+                              unit=eeml.Unit('percent', 'basicSI', 'LIFE'))])
+        
+        try:
+          pac.put()
+        except Exception as e:
+          print "Oops! Something went wrong. Error = {}".format(e)
+        except CosmError, e:
+          now = datetime.datetime.now()
+          print now.strftime('%Y-%m-%d %H:%M ERROR Node 2: StandardError')
+          print('ERROR: pac.put(): {}'.format(e))
+        except StandardError:
+          #print('ERROR: StandardError')
+          now = datetime.datetime.now()
+          print now.strftime('%Y-%m-%d %H:%M ERROR Node 2: StandardError')
+        except:
+          now = datetime.datetime.now()
+          print now.strftime('%Y-%m-%d %H:%M ERROR Node 2: StandardError')
+          print('ERROR: Unexpected error: %s' % sys.exc_info()[0])
 
 
       if node == '2':

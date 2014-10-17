@@ -105,6 +105,9 @@ def main():
   
   
   # COSM variables. 
+#  f = open('apikey.txt', 'r') 
+#  API_KEY = f.read()
+#  f.close() 
   API_KEY = 'suinLKP1uD3GCkuUN-xBmvZzSzWSAKxEcnQrdUJyTHJRND0g'
   FEED = 129833
    
@@ -464,31 +467,32 @@ def main():
         humRaw = (int(humHigh) * 256) + int(humLow)
         humRaw2 = humRaw + 0.0
         actualHum = humRaw2 / 10
-        
-        baroLow = rawx.pop(0).strip()            # baro low byte
-        baroMid = rawx.pop(0).strip()            # baro mid byte
-        baroHigh = rawx.pop(0).strip()           # baro high byte
-        throwaway = rawx.pop(0).strip()          # throw away this byte
-        baroRaw = (int(baroHigh) * 65536) + (int(baroMid) * 256) + int(baroLow)
-        actualBaro = (baroRaw + 1200) / 1000.0
-        
+                
         bvLow = rawx.pop(0).strip()              # batt volt low byte
         bvMid = rawx.pop(0).strip()              # batt volt mid byte
         bvHigh = rawx.pop(0).strip()             # batt volt high byte
         throwaway = rawx.pop(0).strip()          # throw away this byte
         bvRaw = (int(bvHigh) * 65536) + (int(bvMid) * 256) + int(bvLow)
         actualBv = bvRaw * 3.3 / 1024
+        Bv = round(actualBv, 2)
         
+        spvLow = rawx.pop(0).strip()            # solarpanel low byte
+        spvMid = rawx.pop(0).strip()            # solarpanel mid byte
+        spvHigh = rawx.pop(0).strip()           # solarpanel high byte
+        throwaway = rawx.pop(0).strip()         # throw away this byte
+        spvRaw = (int(spvHigh) * 65536) + (int(spvMid) * 256) + int(spvLow)
+        actualspv = spvRaw * 3.3 / 1024
+        Spv = round(actualspv, 2)
         
         
         pac.update([eeml.Data('Kitchen_Temp', actualTemp,
                               unit=eeml.Unit('celcius', 'basicSI', 'C')),
                     eeml.Data('Kitchen_Humidity', actualHum,
                               unit=eeml.Unit('percent', 'basicSI', 'RH')),
-                    eeml.Data('Kitchen_Barometer', actualBaro,
-                              unit=eeml.Unit('pressure', 'basicSI', 'kPa')),
-                    eeml.Data('Kitchen_BattVolt', actualBv,
-                              unit=eeml.Unit('voltage', 'basicSI', 'v'))])
+                    eeml.Data('KitchenBattVolt', Bv,
+                              unit=eeml.Unit('voltage', 'basicSI', 'V')),
+                    eeml.Data('KitchenSolarVolt', Spv,
+                              unit=eeml.Unit('voltage', 'basicSI', 'V'))])
         
         try:
           pac.put()

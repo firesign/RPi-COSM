@@ -5,7 +5,7 @@
 # generaleccentric.net
 #
 # May, 2013
-# Last edit October 2014
+# Last edit January 2015
 
 # Nodes:
 #   1: Office  
@@ -475,14 +475,23 @@ def main():
         bvRaw = (int(bvHigh) * 65536) + (int(bvMid) * 256) + int(bvLow)
         actualBv = bvRaw * 3.3 / 1024
         Bv = round(actualBv, 2)
-        
+
         spvLow = rawx.pop(0).strip()            # solarpanel low byte
         spvMid = rawx.pop(0).strip()            # solarpanel mid byte
         spvHigh = rawx.pop(0).strip()           # solarpanel high byte
         throwaway = rawx.pop(0).strip()         # throw away this byte
         spvRaw = (int(spvHigh) * 65536) + (int(spvMid) * 256) + int(spvLow)
-        actualspv = spvRaw * 3.3 / 1024
+        actualspv = spvRaw * 3.3 /1024
         Spv = round(actualspv, 2)
+
+        scvLow = rawx.pop(0).strip()            # supercap low byte
+        scvMid = rawx.pop(0).strip()            # supercap mid byte
+        scvHigh = rawx.pop(0).strip()           # supercap high byte
+        throwaway = rawx.pop(0).strip()         # throw away this byte
+        scvRaw = (int(scvHigh) * 65536) + (int(scvMid) * 256) + int(scvLow)
+        actualscv = scvRaw * 3.3 /1024
+        Scv = round(actualscv, 2)
+        
         
         
         pac.update([eeml.Data('Kitchen_Temp', actualTemp,
@@ -490,6 +499,8 @@ def main():
                     eeml.Data('Kitchen_Humidity', actualHum,
                               unit=eeml.Unit('percent', 'basicSI', 'RH')),
                     eeml.Data('KitchenBattVolt', Bv,
+                              unit=eeml.Unit('voltage', 'basicSI', 'V')),
+                    eeml.Data('KitchenSupercapVolt', Scv,
                               unit=eeml.Unit('voltage', 'basicSI', 'V')),
                     eeml.Data('KitchenSolarVolt', Spv,
                               unit=eeml.Unit('voltage', 'basicSI', 'V'))])

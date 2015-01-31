@@ -5,7 +5,7 @@
 # generaleccentric.net
 #
 # May, 2013
-# Last edit January 2015
+# Last edit October 2014
 
 # Nodes:
 #   1: Office  
@@ -483,14 +483,6 @@ def main():
         spvRaw = (int(spvHigh) * 65536) + (int(spvMid) * 256) + int(spvLow)
         actualspv = spvRaw * 3.3 /1024
         Spv = round(actualspv, 2)
-
-        scvLow = rawx.pop(0).strip()            # supercap low byte
-        scvMid = rawx.pop(0).strip()            # supercap mid byte
-        scvHigh = rawx.pop(0).strip()           # supercap high byte
-        throwaway = rawx.pop(0).strip()         # throw away this byte
-        scvRaw = (int(scvHigh) * 65536) + (int(scvMid) * 256) + int(scvLow)
-        actualscv = scvRaw * 3.3 /1024
-        Scv = round(actualscv, 2)
         
         
         
@@ -499,8 +491,6 @@ def main():
                     eeml.Data('Kitchen_Humidity', actualHum,
                               unit=eeml.Unit('percent', 'basicSI', 'RH')),
                     eeml.Data('KitchenBattVolt', Bv,
-                              unit=eeml.Unit('voltage', 'basicSI', 'V')),
-                    eeml.Data('KitchenSupercapVolt', Scv,
                               unit=eeml.Unit('voltage', 'basicSI', 'V')),
                     eeml.Data('KitchenSolarVolt', Spv,
                               unit=eeml.Unit('voltage', 'basicSI', 'V'))])

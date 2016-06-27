@@ -316,20 +316,22 @@ def main():
         humRaw2 = humRaw + 0.0
         actualHum = humRaw2 / 10
         
-        battVLow = rawx.pop(0).strip()          # battery high byte
-        battVHigh = rawx.pop(0).strip()         # battery low byte
-        battVRaw = (int(battVHigh) * 256) + int(battVLow)
-        battVRaw2 = battVRaw + 0.0
-        actualBattV = (3.3 * battVRaw2) / 512
-        battV = round(actualBattV, 2)
+        bvLow = rawx.pop(0).strip()              # batt volt low byte
+        bvMid = rawx.pop(0).strip()              # batt volt mid byte
+        bvHigh = rawx.pop(0).strip()             # batt volt high byte
+        throwaway = rawx.pop(0).strip()          # throw away this byte
+        bvRaw = (int(bvHigh) * 65536) + (int(bvMid) * 256) + int(bvLow)
+        actualBv = bvRaw * 3.3 / 512			 # 512 or 1024, whichever works!
+        Bv = round(actualBv, 2)
 
-        solarVLow = rawx.pop(0).strip()            # DS1820 low byte
-        solarVHigh = rawx.pop(0).strip()           # DS1820 high byte
-        solarVRaw = (int(solarVHigh) * 256) + int(solarVLow)
-        solarVRaw2 = solarVRaw + 0.0
-        actualsolarV = solarVRaw2 / 100
-        if actualsolarV > 100:
-          actualsolarV = 0.1
+        spvLow = rawx.pop(0).strip()            # solarpanel low byte
+        spvMid = rawx.pop(0).strip()            # solarpanel mid byte
+        spvHigh = rawx.pop(0).strip()           # solarpanel high byte
+        throwaway = rawx.pop(0).strip()         # throw away this byte
+        spvRaw = (int(spvHigh) * 65536) + (int(spvMid) * 256) + int(spvLow)
+        actualspv = spvRaw * 3.3 /512			# 512 or 1024, whichever works!
+        Spv = round(actualspv, 2)
+        
 
 ##        if ds1820High > 128:                      # code to account for negative temps
 ##          ds1820Raw = ~ ds1820Low
@@ -338,13 +340,13 @@ def main():
 ##          ds1820Raw = ds1820Low + 0.0
 ##          actualds1820 = ds1820Raw / 100
 
-        pac.update([eeml.Data('Remote_Temp', actualTemp,
+        pac.update([eeml.Data('Shed_Temp', actualTemp,
                               unit=eeml.Unit('celcius', 'basicSI', 'C')),
-                    eeml.Data('Remote_Humidity', actualHum,
+                    eeml.Data('Shed_Humidity', actualHum,
                               unit=eeml.Unit('percent', 'basicSI', 'RH')),
-                    eeml.Data('Remote_Batt_V', battV,
+                    eeml.Data('Shed_VBatt', Bv,
                               unit=eeml.Unit('volts', 'basicSI', 'V')),
-                    eeml.Data('Remote_Solar_V', actualsolarV,
+                    eeml.Data('Shed_VSolar', Spv,
                               unit=eeml.Unit('volts', 'basicSI', 'V'))])
         try:
           pac.put()

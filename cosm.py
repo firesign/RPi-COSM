@@ -323,13 +323,13 @@ def main():
         actualBattV = (3.3 * battVRaw2) / 512
         battV = round(actualBattV, 2)
 
-        ds1820Low = rawx.pop(0).strip()            # DS1820 low byte
-        ds1820High = rawx.pop(0).strip()           # DS1820 high byte
-        ds1820Raw = (int(ds1820High) * 256) + int(ds1820Low)
-        ds1820Raw2 = ds1820Raw + 0.0
-        actualds1820 = ds1820Raw2 / 100
-        if actualds1820 > 100:
-          actualds1820 = 0.1
+        solarVLow = rawx.pop(0).strip()            # DS1820 low byte
+        solarVHigh = rawx.pop(0).strip()           # DS1820 high byte
+        solarVRaw = (int(solarVHigh) * 256) + int(solarVLow)
+        solarVRaw2 = solarVRaw + 0.0
+        actualsolarV = solarVRaw2 / 100
+        if actualsolarV > 100:
+          actualsolarV = 0.1
 
 ##        if ds1820High > 128:                      # code to account for negative temps
 ##          ds1820Raw = ~ ds1820Low
@@ -344,8 +344,8 @@ def main():
                               unit=eeml.Unit('percent', 'basicSI', 'RH')),
                     eeml.Data('Remote_Batt_V', battV,
                               unit=eeml.Unit('volts', 'basicSI', 'V')),
-                    eeml.Data('Remote_Batt_Temp', actualds1820,
-                              unit=eeml.Unit('celcius', 'basicSI', 'C'))])
+                    eeml.Data('Remote_Solar_V', actualsolarV,
+                              unit=eeml.Unit('volts', 'basicSI', 'V'))])
         try:
           pac.put()
         except Exception as e:

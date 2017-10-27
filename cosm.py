@@ -11,7 +11,7 @@
 #   1: Office  
 #   2: MBL_room
 #   3: In-Law_Suite
-#   4: Pantry
+#   4: LivingRoom
 #   5: Remote (shed)
 #  10: Garage
 #  11: Kitchen
@@ -280,7 +280,7 @@ def main():
     
         #print "Node: %s  Avg Temp: %s Celcius  Pointer: %s  List: %s" % (node, avrg, pointer, temps)
         
-        pac.update([eeml.Data('Pantry', avrg, unit=eeml.Unit('celcius', 'basicSI', 'C'))])
+        pac.update([eeml.Data('LivingRoom', avrg, unit=eeml.Unit('celcius', 'basicSI', 'C'))])
         try:
           pac.put()
         except Exception as e:
